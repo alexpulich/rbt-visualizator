@@ -245,3 +245,375 @@ class RBTree:
             return 1 + left + right
         else:
             return 0
+
+    def delete(self, key):
+        node = self.get_node(key, self.Root)
+
+        if node:
+            if not (node.left or node.right):
+                if node.parent:
+                    self._delete_leaf(node)
+
+            elif not (node.left and node.right):
+                self._delete_leaf_parent(node)
+
+            else:
+                self._delete_node(node)
+
+    def _delete_node(self, node):
+        """
+        T.__delete_node(node). Deletes node from T, treating it as
+        a Node with two children.
+        """
+        if self.get_height(node.left) > self.get_height(node.right):
+            to_switch = self.get_max(node.left)
+            self._switch_nodes(node, to_switch)
+
+            if not (to_switch.right or to_switch.left):
+                to_delete = self.get_max(node.left)
+                self._delete_leaf(to_delete)
+            else:
+                to_delete = self.get_max(node.left)
+                self._delete_leaf_parent(to_delete)
+        else:
+            to_switch = self.get_min(node.right)
+            self._switch_nodes(node, to_switch)
+
+            if not (to_switch.right or to_switch.left):
+                to_delete = self.get_min(node.right)
+                self._delete_leaf(to_delete)
+            else:
+                to_delete = self.get_min(node.right)
+                self._delete_leaf_parent(to_delete)
+
+    def get_height(self, *args):
+        if len(args) == 0:
+            node = self.Root
+        else:
+            node = args[0]
+
+        if not node or (not node.left and not node.right):
+            return 0
+        else:
+            return 1 + max(self.get_height(node.left), self.get_height(node.right))
+
+    def get_max(self, *args):
+        if len(args) == 0:
+            node = self.Root
+        else:
+            node = args[0]
+
+        if not node.right:
+            return node
+        else:
+            return self.get_max(node.right)
+
+    def get_min(self, *args):
+        if len(args) == 0:
+            node = self.Root
+        else:
+            node = args[0]
+
+        if not node.left:
+            return node
+        else:
+            return self.get_min(node.left)
+
+    def _switch_nodes(self, node1, node2):
+        switch1 = node1
+        switch2 = node2
+        temp_key = switch1.key
+
+        if switch1.key == self.Root.key:
+            self.Root.key = node2.key
+            switch2.key = temp_key
+
+        elif switch2.key == self.Root.key:
+            switch1.key = self.Root.key
+            self.Root.key = temp_key
+        else:
+            switch1.key = node2.key
+            switch2.key = temp_key
+
+    def _delete_leaf_parent(self, node):
+        """
+        T.__delete_leaf_parent(node). Deletes node from T, treating it
+        as a Node with only one child.
+        """
+        par_node = node.parent
+        node_color = node.color
+        if node.left:
+            child_color = node.left.color
+        else:
+            child_color = node.right.color
+
+        if node.key == self.Root.key:
+            if node.right:
+                self.Root = node.right
+                self.Root.color = 'k'
+                node.right = None
+                new_node = node.right
+            else:
+                self.Root = node.left
+                self.Root.color = 'k'
+                node.left = None
+                new_node = node.left
+
+        else:
+            if par_node.right == node:
+                if node.right:
+                    par_node.right = node.right
+                    par_node.right.parent = par_node
+                    node.right = None
+                    if node_color == 'k' and child_color == 'r':
+                        par_node.right.color = 'k'
+
+                else:
+                    par_node.right = node.left
+                    par_node.right.parent = par_node
+                    node.left = None
+                    if node_color == 'k' and child_color == 'r':
+                        par_node.right.color = 'k'
+
+                new_node = par_node.right
+
+            else:
+
+                if node.right:
+                    par_node.left = node.right
+                    par_node.left.parent = par_node
+                    node.right = None
+                    if node_color == 'k' and child_color == 'r':
+                        par_node.left.color = 'k'
+                else:
+                    par_node.left = node.left
+                    par_node.left.parent = par_node
+                    node.left = None
+                    if node_color == 'k' and child_color == 'r':
+                        par_node.left.color = 'k'
+
+                new_node = par_node.left
+
+        del node
+
+        if node_color == 'k' and child_color == 'k':
+            self._delete_case_one(new_node, par_node)
+
+    def _delete_leaf(self, node):
+        """
+        T.__delete_leaf_parent(node). Deletes node from T, treating it
+        as a Node with only one child.
+        """
+        par_node = node.parent
+        node_color = node.color
+
+        if par_node:
+            if par_node.left == node:
+                par_node.left = None
+                new_node = None
+            else:
+                par_node.right = None
+                new_node = None
+
+            del node
+
+        new_parent = par_node
+
+        if node_color == 'k':
+            self._delete_case_one(new_node, new_parent)
+
+    def _delete_case_one(self, child, parent):
+        """
+        T._delete_case_one(child,parent). Considers the case in which
+        child is the new root. If so, we are done. If not, move on to
+        case two.
+        """
+        if parent:
+            self._delete_case_two(child, parent)
+
+    def _delete_case_two(self, child, parent):
+        """
+        T._delete_case_two(child,parent). Considers the case in which
+        child's sibling is red. If so, reverse the colors of parent
+        and sibling, and perform an appropriate tree rotation
+        around the parent. Move on to case three.
+        """
+        node = child
+        par_node = parent
+
+        if par_node.left == node:
+            sib_node = par_node.right
+        elif par_node.right == node:
+            sib_node = par_node.left
+
+        if sib_node and sib_node.color == 'r':
+            sib_node.color = 'k'
+            par_node.color = 'r'
+            if par_node.left == node:
+                self._rotate_left(par_node)
+            else:
+                self._rotate_right(par_node)
+
+        self._delete_case_three(node, par_node)
+
+    def _delete_case_three(self, child, parent):
+        """
+        T._delete_case_three(child,parent). Considers the case in which
+        parent, child's sibling, and the sibling's children are all
+        black. If so, recolor child's sibling red and start over
+        from case one from parent. If not, move on to case four.
+        """
+        node = child
+        par_node = parent
+
+        if par_node.left == node:
+            sib_node = par_node.right
+        elif par_node.right == node:
+            sib_node = par_node.left
+
+        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+            sib_color = 'k'
+        else:
+            sib_color = 'r'
+
+        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+            sib_left_color = 'k'
+        else:
+            sib_left_color = 'r'
+
+        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+            sib_right_color = 'k'
+        else:
+            sib_right_color = 'r'
+
+        if par_node.color == 'k' and sib_color == 'k' and sib_left_color == 'k' and sib_right_color == 'k':
+            sib_node.color = 'r'
+            self._delete_case_one(par_node, par_node.parent if par_node.parent else None)
+        else:
+            self._delete_case_four(node, par_node)
+
+    def _delete_case_four(self, child, parent):
+        """
+        T._delete_case_four(child,parent). Considers the case in which
+        child's sibling and its children are black, but parent is red.
+        If so, we swap the colors of the sibling and parent.
+        If not, move on to case five.
+        """
+        node = child
+        par_node = parent
+
+        if par_node.left == node:
+            sib_node = par_node.right
+        elif par_node.right == node:
+            sib_node = par_node.left
+
+        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+            sib_color = 'k'
+        else:
+            sib_color = 'r'
+
+        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+            sib_left_color = 'k'
+        else:
+            sib_left_color = 'r'
+
+        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+            sib_right_color = 'k'
+        else:
+            sib_right_color = 'r'
+
+        if par_node.color == 'r' and sib_color == 'k' and sib_left_color == 'k' and sib_right_color == 'k':
+            sib_node.color = 'r'
+            par_node.color = 'k'
+        else:
+            self._delete_case_five(node, par_node)
+
+    def _delete_case_five(self, child, parent):
+        """
+        T._delete_case_five(child,parent). Considers the case in which
+        child's sibling is black, its left child is red, its right
+        child is black, and child is the left child of parent.
+        Also considers the mirror case to this. If so, perform
+        an appropriate tree rotation around the sibling, and
+        swap the colors of the sibling and its new parent.
+        Move on to case six.
+        """
+        node = child
+        par_node = parent
+
+        if par_node.left == node:
+            sib_node = par_node.right
+        elif par_node.right == node:
+            sib_node = par_node.left
+
+        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+            sib_color = 'k'
+        else:
+            sib_color = 'r'
+
+        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+            sib_left_color = 'k'
+        else:
+            sib_left_color = 'r'
+
+        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+            sib_right_color = 'k'
+        else:
+            sib_right_color = 'r'
+
+        if sib_color == 'k':
+
+            if par_node.left == node and sib_right_color == 'k' and sib_left_color == 'r':
+                sib_node.color = 'r'
+                sib_node.left.color = 'k'
+                self._rotate_right(sib_node)
+            elif par_node.right == node and sib_left_color == 'k' and sib_right_color == 'r':
+                sib_node.color = 'r'
+                sib_node.right.color = 'k'
+                self._rotate_left(sib_node)
+
+        self._delete_case_six(node, par_node)
+
+    def _delete_case_six(self, child, parent):
+        """
+        Considers the case in which child's sibling is black,
+        its right child is red, and child is the left child of parent.
+        Also considers the mirror of this case. If so, perform
+        an appropriate tree rotation around parent, so that child's sibling
+        becomes the parent of parent and the sibling's right child.
+        Then exchange the colors of parent and child's sibling, and
+        make the sibling's red child black. We are done.
+        """
+        node = child
+        par_node = parent
+
+        if par_node.left == node:
+            sib_node = par_node.right
+        elif par_node.right == node:
+            sib_node = par_node.left
+
+        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+            sib_color = 'k'
+        else:
+            sib_color = 'r'
+
+        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+            sib_left_color = 'k'
+        else:
+            sib_left_color = 'r'
+
+        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+            sib_right_color = 'k'
+        else:
+            sib_right_color = 'r'
+
+        if par_node.left == node and sib_color == 'k' and sib_right_color == 'r':
+            sib_node.color = par_node.color
+            par_node.color = 'k'
+            sib_node.right.color = 'k'
+            self._rotate_left(par_node)
+        elif par_node.right == node and sib_color == 'k' and sib_left_color == 'r':
+            sib_node.color = par_node.color
+            par_node.color = 'k'
+            sib_node.left.color = 'k'
+            self._rotate_right(par_node)
