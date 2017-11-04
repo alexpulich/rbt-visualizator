@@ -2,8 +2,7 @@ import sys
 from rbtree import RBTree
 from PyQt5 import QtWidgets
 import networkx as nx
-import matplotlib.pyplot as plt
-import matplotlib.widgets as wd
+import pickle
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
@@ -17,40 +16,65 @@ class Window(QtWidgets.QDialog):
         self.init_ui()
         self.init_tree()
 
+    def center(self):
+        qr = self.frameGeometry()
+        cp = QtWidgets.QDesktopWidget().availableGeometry().center()
+        qr.moveCenter(cp)
+        self.move(qr.topLeft())
+
     def init_ui(self):
         self.setWindowTitle('Red-Black Tree | Alex Pulich, P3417')
-        # a figure instance to plot on
+
+        #pyplot
         self.figure = Figure()
-
-        # this is the Canvas Widget that displays the `figure`
-        # it takes the `figure` instance as a parameter to __init__
         self.canvas = FigureCanvas(self.figure)
-
-        # this is the Navigation widget
-        # it takes the Canvas widget and a parent
         self.toolbar = NavigationToolbar(self.canvas, self)
 
-        # forms
-        formGroupBox = QtWidgets.QGroupBox("Tree managing")
+        #controls
+        #tree managing group
+        tree_mng_groupbox = QtWidgets.QGroupBox("Tree managing")
         tree_mng_layout = QtWidgets.QHBoxLayout()
-        tree_mng_layout.addWidget(QtWidgets.QLabel('Key:'))
+
+        key_label = QtWidgets.QLabel('Key:')
         self.key_input = QtWidgets.QLineEdit()
-        tree_mng_layout.addWidget(self.key_input)
         self.add_btn = QtWidgets.QPushButton('Add')
-        self.add_btn.clicked.connect(self.add_btn_handler)
         self.remove_btn = QtWidgets.QPushButton('Remove')
+
+        self.add_btn.clicked.connect(self.add_btn_handler)
         self.remove_btn.clicked.connect(self.remove_btn_handler)
+
+        tree_mng_layout.addWidget(key_label)
+        tree_mng_layout.addWidget(self.key_input)
         tree_mng_layout.addWidget(self.add_btn)
         tree_mng_layout.addWidget(self.remove_btn)
-        tree_mng_layout.addStretch(1)
-        formGroupBox.setLayout(tree_mng_layout)
 
-        # set the layout
+        tree_mng_groupbox.setLayout(tree_mng_layout)
+
+        #import/export group
+        io_groupbox = QtWidgets.QGroupBox("Export/Import")
+        io_layout = QtWidgets.QHBoxLayout()
+
+        self.export_btn = QtWidgets.QPushButton('Export')
+        self.import_btn = QtWidgets.QPushButton('Import')
+
+        io_layout.addWidget(self.export_btn)
+        io_layout.addWidget(self.import_btn)
+
+        self.import_btn.clicked.connect(self.import_btn_handler)
+        self.export_btn.clicked.connect(self.export_btn_handler)
+
+        io_groupbox.setLayout(io_layout)
+
+        # set the main layout
         layout = QtWidgets.QVBoxLayout()
         layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
-        layout.addWidget(formGroupBox)
+        controls_layout = QtWidgets.QHBoxLayout()
+        controls_layout.addWidget(tree_mng_groupbox)
+        controls_layout.addWidget(io_groupbox)
+        layout.addLayout(controls_layout)
         self.setLayout(layout)
+        self.center()
 
     def init_tree(self):
         self.tree = RBTree()
@@ -60,7 +84,7 @@ class Window(QtWidgets.QDialog):
         try:
             key = int(self.key_input.text())
         except ValueError:
-            print('Failed to convert to int')
+            self.show_error('Int expected', 'The key should be a number!')
 
         if key:
             self.tree.insert(key)
@@ -76,7 +100,31 @@ class Window(QtWidgets.QDialog):
 
         if key:
             self.tree.delete(key)
+            self.key_input.clear()
             self.plot()
+
+    def export_btn_handler(self):
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree', 'Red-Black Tree files (*.rbtree)')[0]
+        if fname:
+            with open(fname, 'wb') as f:
+                pickle.dump(self.tree, f)
+
+    def import_btn_handler(self):
+        fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Import RBTree', '',
+                                                      'Red-Black Tree files (*.rbtree)')[0]
+        if fname:
+            with open(fname, 'rb') as f:
+                self.tree = pickle.load(f)
+            self.plot()
+
+    def show_error(self, title, message):
+        msg = QtWidgets.QMessageBox()
+        msg.setIcon(QtWidgets.QMessageBox.Critical)
+        msg.setWindowTitle(title)
+        msg.setText(message)
+        msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
+        retval = msg.exec_()
+        self.key_input.clear()
 
     def plot(self):
         ax = self.figure.add_subplot(111)
