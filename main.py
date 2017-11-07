@@ -8,7 +8,6 @@ from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
-import random
 
 class Window(QtWidgets.QDialog):
     def __init__(self, parent=None):
@@ -39,14 +38,17 @@ class Window(QtWidgets.QDialog):
         self.key_input = QtWidgets.QLineEdit()
         self.add_btn = QtWidgets.QPushButton('Add')
         self.remove_btn = QtWidgets.QPushButton('Remove')
+        self.search_btn = QtWidgets.QPushButton('Search')
 
         self.add_btn.clicked.connect(self.add_btn_handler)
         self.remove_btn.clicked.connect(self.remove_btn_handler)
+        self.search_btn.clicked.connect(self.search_btn_handler)
 
         tree_mng_layout.addWidget(key_label)
         tree_mng_layout.addWidget(self.key_input)
         tree_mng_layout.addWidget(self.add_btn)
         tree_mng_layout.addWidget(self.remove_btn)
+        tree_mng_layout.addWidget(self.search_btn)
 
         tree_mng_groupbox.setLayout(tree_mng_layout)
 
@@ -77,7 +79,7 @@ class Window(QtWidgets.QDialog):
         self.center()
 
     def init_tree(self):
-        self.tree = RBTree()
+        self.tree = RBTree(self)
 
     def add_btn_handler(self):
         key = None
@@ -102,6 +104,9 @@ class Window(QtWidgets.QDialog):
             self.tree.delete(key)
             self.key_input.clear()
             self.plot()
+
+    def search_btn_handler(self):
+        self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
 
     def export_btn_handler(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree', 'Red-Black Tree files (*.rbtree)')[0]

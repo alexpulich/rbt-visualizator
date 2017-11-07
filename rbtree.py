@@ -1,8 +1,12 @@
 import collections
+import time
+
+window = None
 
 
 class Node:
     """A node of a Red-black Tree"""
+
     def __init__(self, key):
         self.left = None
         self.right = None
@@ -12,16 +16,18 @@ class Node:
 
 
 class RBTree:
-    def __init__(self, *args):
+    def __init__(self, w):
+        global window
+        window = w
 
         self.Root = None
 
-        if len(args) == 1:
-            if isinstance(args[0], collections.Iterable):
-                for x in args[0]:
-                    self.insert(x)
-            else:
-                raise TypeError(str(args[0]) + " is not iterable")
+        # if len(args) == 1:
+        #     if isinstance(args[0], collections.Iterable):
+        #         for x in args[0]:
+        #             self.insert(x)
+        #     else:
+        #         raise TypeError(str(args[0]) + " is not iterable")
 
     def get_node(self, key, *args):
         if len(args) == 0:
@@ -38,7 +44,24 @@ class RBTree:
         else:
             return self.get_node(key, start.left)
 
-    def insert(self, key,  *args):
+    def search_node(self, key, *args):
+        if len(args) == 0:
+            start = self.Root
+        else:
+            start = args[0]
+            start.color = 'g'
+            window.plot()
+
+        if not start:
+            return None
+        if key == start.key:
+            return start
+        elif key > start.key:
+            return self.search_node(key, start.right)
+        else:
+            return self.search_node(key, start.left)
+
+    def insert(self, key, *args):
         if not isinstance(key, int):
             raise TypeError(str(key) + " is not an int")
         else:
@@ -78,7 +101,6 @@ class RBTree:
             self.Root.color = 'k'
         else:
             self._insert_case_two(child)
-
 
     def _insert_case_two(self, child):
         """
@@ -406,6 +428,7 @@ class RBTree:
         """
         par_node = node.parent
         node_color = node.color
+        new_node = None
 
         if par_node:
             if par_node.left == node:
@@ -440,6 +463,7 @@ class RBTree:
         """
         node = child
         par_node = parent
+        sib_node = None
 
         if par_node.left == node:
             sib_node = par_node.right
@@ -465,23 +489,24 @@ class RBTree:
         """
         node = child
         par_node = parent
+        sib_node = None
 
         if par_node.left == node:
             sib_node = par_node.right
         elif par_node.right == node:
             sib_node = par_node.left
 
-        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+        if (sib_node and sib_node.color == 'k') or (not sib_node):
             sib_color = 'k'
         else:
             sib_color = 'r'
 
-        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+        if (sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left):
             sib_left_color = 'k'
         else:
             sib_left_color = 'r'
 
-        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+        if (sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right):
             sib_right_color = 'k'
         else:
             sib_right_color = 'r'
@@ -501,18 +526,19 @@ class RBTree:
         """
         node = child
         par_node = parent
+        sib_node = None
 
         if par_node.left == node:
             sib_node = par_node.right
         elif par_node.right == node:
             sib_node = par_node.left
 
-        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+        if (sib_node and sib_node.color == 'k') or (not sib_node):
             sib_color = 'k'
         else:
             sib_color = 'r'
 
-        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+        if (sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left):
             sib_left_color = 'k'
         else:
             sib_left_color = 'r'
@@ -540,23 +566,24 @@ class RBTree:
         """
         node = child
         par_node = parent
+        sib_node = None
 
         if par_node.left == node:
             sib_node = par_node.right
         elif par_node.right == node:
             sib_node = par_node.left
 
-        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+        if (sib_node and sib_node.color == 'k') or (not sib_node):
             sib_color = 'k'
         else:
             sib_color = 'r'
 
-        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+        if (sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left):
             sib_left_color = 'k'
         else:
             sib_left_color = 'r'
 
-        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+        if (sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right):
             sib_right_color = 'k'
         else:
             sib_right_color = 'r'
@@ -586,23 +613,24 @@ class RBTree:
         """
         node = child
         par_node = parent
+        sib_node = None
 
         if par_node.left == node:
             sib_node = par_node.right
         elif par_node.right == node:
             sib_node = par_node.left
 
-        if ((sib_node and sib_node.color == 'k') or (not sib_node)):
+        if (sib_node and sib_node.color == 'k') or (not sib_node):
             sib_color = 'k'
         else:
             sib_color = 'r'
 
-        if ((sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left)):
+        if (sib_node and sib_node.left and sib_node.left.color == 'k') or (not sib_node or not sib_node.left):
             sib_left_color = 'k'
         else:
             sib_left_color = 'r'
 
-        if ((sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right)):
+        if (sib_node and sib_node.right and sib_node.right.color == 'k') or (not sib_node or not sib_node.right):
             sib_right_color = 'k'
         else:
             sib_right_color = 'r'
