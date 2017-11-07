@@ -1,3 +1,7 @@
 .idea
 __pycache__/
 *.rbtree
+py-bst
+*.spec
+build
+dist
