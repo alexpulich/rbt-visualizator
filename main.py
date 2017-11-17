@@ -139,16 +139,10 @@ class Window(QtWidgets.QDialog):
         self.key_input.clear()
 
     def plot(self):
+        self.figure.clear()
         ax = self.figure.add_subplot(111)
 
-        # discards the old graph
         ax.clear()
-
-        # plot data
-        # ax.plot(data, '*-')
-
-        # refresh canvas
-
 
         G = nx.Graph()
 
@@ -174,11 +168,9 @@ class Window(QtWidgets.QDialog):
             nx.draw_networkx_edges(G, pos, ax=ax)
             nx.draw_networkx_labels(G, pos, labels, ax=ax)
 
-        # plt.axis('off')
         ax.axis('off')
 
         self.canvas.draw()
-        # plt.show()
 
     def _get_pos_list(self, tree):
         """
