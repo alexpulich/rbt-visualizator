@@ -198,7 +198,7 @@ class RBTree:
         temp = new_root.right
         old_root.right = new_root.left
 
-        if (old_root.right):
+        if old_root.right:
             old_root.right.parent = old_root
         new_root.left = old_root
         old_root.parent = new_root

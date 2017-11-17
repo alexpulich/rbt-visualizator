@@ -82,6 +82,8 @@ class Window(QtWidgets.QDialog):
         self.tree = RBTree(self)
 
     def add_btn_handler(self):
+        if len(self.key_input.text()) == 0:
+            return
         key = None
         try:
             key = int(self.key_input.text())
@@ -94,6 +96,8 @@ class Window(QtWidgets.QDialog):
             self.key_input.clear()
 
     def remove_btn_handler(self):
+        if len(self.key_input.text()) == 0:
+            return
         key = None
         try:
             key = int(self.key_input.text())
@@ -106,6 +110,8 @@ class Window(QtWidgets.QDialog):
             self.plot()
 
     def search_btn_handler(self):
+        if len(self.key_input.text()) == 0:
+            return
         self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
 
     def export_btn_handler(self):
@@ -146,18 +152,21 @@ class Window(QtWidgets.QDialog):
         G = nx.Graph()
 
         pos = self._get_pos_list(self.tree)
-        nodes = [x for x in pos.keys()]
+        # nodes = [x for x in pos.keys()]
+        nodes = [x.key for x in self._preorder(self.tree)]
         edges = self._get_edge_list(self.tree)
         labels = self._get_label_list(self.tree)
+        labels = {x:x for x in nodes}
         colors = []
         try:
             colors = self._get_color_list(self.tree)
         except AttributeError:
             pass
 
-        G.add_edges_from(edges)
         G.add_nodes_from(nodes)
+        G.add_edges_from(edges)
 
+        print(list(G))
         if len(colors) > 0:
             nx.draw_networkx_nodes(G, pos, node_size=600, node_color=colors, ax=ax)
             nx.draw_networkx_edges(G, pos,ax=ax)
@@ -201,7 +210,7 @@ class Window(QtWidgets.QDialog):
         positions = poslst
 
         if node and node.key == tree.Root.key:
-            positions[0] = (0, 0)
+            positions[node.key] = (0, 0)
             positions = self._get_pos_list_from(tree, tree.Root.left, positions, 1, (0, 0), gap)
             positions = self._get_pos_list_from(tree, tree.Root.right, positions, 1 + tree.get_element_count(node.left),
                                                 (0, 0), gap)
@@ -209,10 +218,10 @@ class Window(QtWidgets.QDialog):
         elif node:
             if node.parent.right and node.parent.right.key == node.key:
                 new_coords = (coords[0] + gap, coords[1] - 1)
-                positions[index] = new_coords
+                positions[node.key] = new_coords
             else:
                 new_coords = (coords[0] - gap, coords[1] - 1)
-                positions[index] = new_coords
+                positions[node.key] = new_coords
 
             positions = self._get_pos_list_from(tree, node.left, positions, index + 1, new_coords, gap / 2)
             positions = self._get_pos_list_from(tree, node.right, positions,
@@ -241,10 +250,10 @@ class Window(QtWidgets.QDialog):
             new_index = 1 + tree.get_element_count(node.left)
 
             if node.left:
-                edges.append((0, 1))
+                edges.append((node.key, node.left.key))
                 edges = self._get_edge_list_from(tree, node.left, edges, 1)
             if node.right:
-                edges.append((0, new_index))
+                edges.append((node.key, node.right.key))
                 edges = self._get_edge_list_from(tree, node.right, edges, new_index)
 
             return edges
@@ -253,9 +262,9 @@ class Window(QtWidgets.QDialog):
             new_index = 1 + index + tree.get_element_count(node.left)
 
             if node.left:
-                edges.append((index, index + 1))
+                edges.append((node.key, node.left.key))
             if node.right:
-                edges.append((index, new_index))
+                edges.append((node.key, node.right.key))
 
             edges = self._get_edge_list_from(tree, node.left, edges, index + 1)
             edges = self._get_edge_list_from(tree, node.right, edges, new_index)
