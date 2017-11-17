@@ -24,13 +24,13 @@ class Window(QtWidgets.QDialog):
     def init_ui(self):
         self.setWindowTitle('Red-Black Tree | Alex Pulich, P3417')
 
-        #pyplot
+        # pyplot
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
         self.toolbar = NavigationToolbar(self.canvas, self)
 
-        #controls
-        #tree managing group
+        # controls
+        # tree managing group
         tree_mng_groupbox = QtWidgets.QGroupBox("Tree managing")
         tree_mng_layout = QtWidgets.QHBoxLayout()
 
@@ -52,7 +52,7 @@ class Window(QtWidgets.QDialog):
 
         tree_mng_groupbox.setLayout(tree_mng_layout)
 
-        #import/export group
+        # import/export group
         io_groupbox = QtWidgets.QGroupBox("Export/Import")
         io_layout = QtWidgets.QHBoxLayout()
 
@@ -115,7 +115,8 @@ class Window(QtWidgets.QDialog):
         self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
 
     def export_btn_handler(self):
-        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree', 'Red-Black Tree files (*.rbtree)')[0]
+        fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree',
+                                                      'Red-Black Tree files (*.rbtree)')[0]
         if fname:
             with open(fname, 'wb') as f:
                 pickle.dump(self.tree, f)
@@ -152,11 +153,9 @@ class Window(QtWidgets.QDialog):
         G = nx.Graph()
 
         pos = self._get_pos_list(self.tree)
-        # nodes = [x for x in pos.keys()]
         nodes = [x.key for x in self._preorder(self.tree)]
         edges = self._get_edge_list(self.tree)
-        labels = self._get_label_list(self.tree)
-        labels = {x:x for x in nodes}
+        labels = {x: x for x in nodes}
         colors = []
         try:
             colors = self._get_color_list(self.tree)
@@ -166,15 +165,14 @@ class Window(QtWidgets.QDialog):
         G.add_nodes_from(nodes)
         G.add_edges_from(edges)
 
-        print(list(G))
         if len(colors) > 0:
             nx.draw_networkx_nodes(G, pos, node_size=600, node_color=colors, ax=ax)
-            nx.draw_networkx_edges(G, pos,ax=ax)
-            nx.draw_networkx_labels(G, pos, labels, font_color='w',ax=ax)
+            nx.draw_networkx_edges(G, pos, ax=ax)
+            nx.draw_networkx_labels(G, pos, labels, font_color='w', ax=ax)
         else:
-            nx.draw_networkx_nodes(G, pos, node_size=600, node_color='r',ax=ax)
-            nx.draw_networkx_edges(G, pos,ax=ax)
-            nx.draw_networkx_labels(G, pos, labels,ax=ax)
+            nx.draw_networkx_nodes(G, pos, node_size=600, node_color='r', ax=ax)
+            nx.draw_networkx_edges(G, pos, ax=ax)
+            nx.draw_networkx_labels(G, pos, labels, ax=ax)
 
         # plt.axis('off')
         ax.axis('off')
@@ -235,9 +233,9 @@ class Window(QtWidgets.QDialog):
         _get_edge_list(tree) -> Sequence. Produces a sequence
         of tuples representing edges to be drawn.
         """
-        return self._get_edge_list_from(tree, tree.Root, [], 0)
+        return self._get_edge_list_from(tree, tree.Root, [])
 
-    def _get_edge_list_from(self, tree, node, edgelst, index):
+    def _get_edge_list_from(self, tree, node, edgelst):
         """
         _get_edge_list_from(tree,node,edgelst,index) -> Sequence.
         Produces a sequence of tuples representing edges to be drawn.
@@ -247,46 +245,27 @@ class Window(QtWidgets.QDialog):
         edges = edgelst
 
         if node and node.key == tree.Root.key:
-            new_index = 1 + tree.get_element_count(node.left)
-
             if node.left:
                 edges.append((node.key, node.left.key))
-                edges = self._get_edge_list_from(tree, node.left, edges, 1)
+                edges = self._get_edge_list_from(tree, node.left, edges)
             if node.right:
                 edges.append((node.key, node.right.key))
-                edges = self._get_edge_list_from(tree, node.right, edges, new_index)
+                edges = self._get_edge_list_from(tree, node.right, edges)
 
             return edges
 
         elif node:
-            new_index = 1 + index + tree.get_element_count(node.left)
-
             if node.left:
                 edges.append((node.key, node.left.key))
             if node.right:
                 edges.append((node.key, node.right.key))
 
-            edges = self._get_edge_list_from(tree, node.left, edges, index + 1)
-            edges = self._get_edge_list_from(tree, node.right, edges, new_index)
+            edges = self._get_edge_list_from(tree, node.left, edges)
+            edges = self._get_edge_list_from(tree, node.right, edges)
             return edges
 
         else:
             return edges
-
-    def _get_label_list(self, tree):
-        """
-        _get_pos_list(tree) -> Mapping. Produces a mapping
-        of nodes as keys, and their labels for plotting
-        as values.
-        """
-        nodelist = self._preorder(tree)
-        labellist = {}
-        index = 0
-        for node in nodelist:
-            labellist[index] = node.key
-            index = index + 1
-
-        return labellist
 
     def _preorder(self, tree, *args):
         """
@@ -324,6 +303,7 @@ class Window(QtWidgets.QDialog):
                 colorlist.append(node.color)
 
         return colorlist
+
 
 if __name__ == '__main__':
     app = QtWidgets.QApplication(sys.argv)
