@@ -5,7 +5,7 @@ import networkx as nx
 import pickle
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+# from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
 
@@ -115,6 +115,7 @@ class Window(QtWidgets.QDialog):
         # self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
         node = self.tree.get_node(int(self.key_input.text()))
         node_path = self.tree.get_path(node)
+        self.plot(self._color_search_path(node_path))
 
     def export_btn_handler(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree',
@@ -140,7 +141,18 @@ class Window(QtWidgets.QDialog):
         retval = msg.exec_()
         self.key_input.clear()
 
-    def plot(self):
+    def _color_search_path(self, path):
+        nodes = [x.key for x in self._preorder(self.tree)]
+        colors = self._get_color_list(self.tree)
+        for p in path:
+            try:
+                pos = nodes.index(p)
+            except ValueError:
+                pass
+            colors[pos] = 'g'
+        return colors
+
+    def plot(self, search_colors = None):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
 
@@ -152,11 +164,17 @@ class Window(QtWidgets.QDialog):
         nodes = [x.key for x in self._preorder(self.tree)]
         edges = self._get_edge_list(self.tree)
         labels = {x: x for x in nodes}
-        colors = []
-        try:
-            colors = self._get_color_list(self.tree)
-        except AttributeError:
-            pass
+        if search_colors is None:
+            colors = []
+            try:
+                colors = self._get_color_list(self.tree)
+            except AttributeError:
+                pass
+        else:
+            colors = search_colors
+
+        print(nodes.index(10))
+
 
         G.add_nodes_from(nodes)
         G.add_edges_from(edges)
