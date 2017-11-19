@@ -27,7 +27,7 @@ class Window(QtWidgets.QDialog):
         # pyplot
         self.figure = Figure()
         self.canvas = FigureCanvas(self.figure)
-        self.toolbar = NavigationToolbar(self.canvas, self)
+        # self.toolbar = NavigationToolbar(self.canvas, self)
 
         # controls
         # tree managing group
@@ -69,7 +69,7 @@ class Window(QtWidgets.QDialog):
 
         # set the main layout
         layout = QtWidgets.QVBoxLayout()
-        layout.addWidget(self.toolbar)
+        # layout.addWidget(self.toolbar)
         layout.addWidget(self.canvas)
         controls_layout = QtWidgets.QHBoxLayout()
         controls_layout.addWidget(tree_mng_groupbox)
