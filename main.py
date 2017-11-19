@@ -173,9 +173,6 @@ class Window(QtWidgets.QDialog):
         else:
             colors = search_colors
 
-        print(nodes.index(10))
-
-
         G.add_nodes_from(nodes)
         G.add_edges_from(edges)
 
@@ -200,7 +197,7 @@ class Window(QtWidgets.QDialog):
         methods for plotting binary search trees, this somewhat
         choppy method has to be used.
         """
-        return self._get_pos_list_from(tree, tree.Root, {}, 0, (0, 0), 1.0)
+        return self._get_pos_list_from(tree, tree.root, {}, 0, (0, 0), 1.0)
 
     def _get_pos_list_from(self, tree, node, poslst, index, coords, gap):
         """
@@ -219,10 +216,10 @@ class Window(QtWidgets.QDialog):
         """
         positions = poslst
 
-        if node and node.key == tree.Root.key:
+        if node and node.key == tree.root.key:
             positions[node.key] = (0, 0)
-            positions = self._get_pos_list_from(tree, tree.Root.left, positions, 1, (0, 0), gap)
-            positions = self._get_pos_list_from(tree, tree.Root.right, positions, 1 + tree.get_element_count(node.left),
+            positions = self._get_pos_list_from(tree, tree.root.left, positions, 1, (0, 0), gap)
+            positions = self._get_pos_list_from(tree, tree.root.right, positions, 1 + tree.get_element_count(node.left),
                                                 (0, 0), gap)
             return positions
         elif node:
@@ -245,7 +242,7 @@ class Window(QtWidgets.QDialog):
         _get_edge_list(tree) -> Sequence. Produces a sequence
         of tuples representing edges to be drawn.
         """
-        return self._get_edge_list_from(tree, tree.Root, [])
+        return self._get_edge_list_from(tree, tree.root, [])
 
     def _get_edge_list_from(self, tree, node, edgelst):
         """
@@ -256,7 +253,7 @@ class Window(QtWidgets.QDialog):
         """
         edges = edgelst
 
-        if node and node.key == tree.Root.key:
+        if node and node.key == tree.root.key:
             if node.left:
                 edges.append((node.key, node.left.key))
                 edges = self._get_edge_list_from(tree, node.left, edges)
@@ -287,7 +284,7 @@ class Window(QtWidgets.QDialog):
         """
         if len(args) == 0:
             elements = []
-            node = tree.Root
+            node = tree.root
         else:
             node = tree
             elements = args[0]

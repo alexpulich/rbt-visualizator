@@ -2,7 +2,7 @@ import collections
 
 
 class Node:
-    """A node of a Red-black Tree"""
+    """A Red-Black-Tree node"""
 
     def __init__(self, key):
         self.left = None
@@ -13,8 +13,10 @@ class Node:
 
 
 class RBTree:
+    """A Red-Black-Tree"""
+
     def __init__(self, *args):
-        self.Root = None
+        self.root = None
 
         if len(args) == 1:
             if isinstance(args[0], collections.Iterable):
@@ -24,8 +26,10 @@ class RBTree:
                 raise TypeError(str(args[0]) + " is not iterable")
 
     def get_node(self, key, *args):
+        """Returns a node by key. Second optional param is a node to start searching from"""
+
         if len(args) == 0:
-            start = self.Root
+            start = self.root
         else:
             start = args[0]
 
@@ -39,6 +43,8 @@ class RBTree:
             return self.get_node(key, start.left)
 
     def get_path(self, node):
+        """Returns a path-list of keys from root to taken node"""
+
         curr = node
         lst = [curr.key]
         while curr.parent is not None:
@@ -48,15 +54,17 @@ class RBTree:
         return reversed(lst)
 
     def insert(self, key, *args):
+        """Insert a node with key"""
+
         if not isinstance(key, int):
             raise TypeError(str(key) + " is not an int")
         else:
-            if not self.Root:
-                self.Root = Node(key)
-                self.Root.color = 'k'
+            if not self.root:
+                self.root = Node(key)
+                self.root.color = 'k'
             elif len(args) == 0:
-                if not self.get_node(key, self.Root):
-                    self.insert(key, self.Root)
+                if not self.get_node(key):
+                    self.insert(key, self.root)
             else:
                 child = Node(key)
                 parent = args[0]
@@ -84,7 +92,7 @@ class RBTree:
         otherwise moves on to case two.
         """
         if not child.parent:
-            self.Root.color = 'k'
+            self.root.color = 'k'
         else:
             self._insert_case_two(child)
 
@@ -190,8 +198,8 @@ class RBTree:
         old_root.parent = new_root
 
         if parent is None:
-            self.Root = new_root
-            self.Root.parent = None
+            self.root = new_root
+            self.root.parent = None
         else:
             if parent.right and parent.right.key == old_root.key:
                 parent.right = new_root
@@ -222,8 +230,8 @@ class RBTree:
             old_root.parent = new_root
 
             if parent is None:
-                self.Root = new_root
-                self.Root.parent = None
+                self.root = new_root
+                self.root.parent = None
             else:
                 if parent.right and parent.right.key == old_root.key:
                     parent.right = new_root
@@ -237,7 +245,7 @@ class RBTree:
         Counts the number of elements in a tree
         """
         if len(args) == 0:
-            node = self.Root
+            node = self.root
         else:
             node = args[0]
 
@@ -255,7 +263,7 @@ class RBTree:
             return 0
 
     def delete(self, key):
-        node = self.get_node(key, self.Root)
+        node = self.get_node(key, self.root)
 
         if node:
             if not (node.left or node.right):
@@ -296,7 +304,7 @@ class RBTree:
 
     def get_height(self, *args):
         if len(args) == 0:
-            node = self.Root
+            node = self.root
         else:
             node = args[0]
 
@@ -307,7 +315,7 @@ class RBTree:
 
     def get_max(self, *args):
         if len(args) == 0:
-            node = self.Root
+            node = self.root
         else:
             node = args[0]
 
@@ -318,7 +326,7 @@ class RBTree:
 
     def get_min(self, *args):
         if len(args) == 0:
-            node = self.Root
+            node = self.root
         else:
             node = args[0]
 
@@ -332,13 +340,13 @@ class RBTree:
         switch2 = node2
         temp_key = switch1.key
 
-        if switch1.key == self.Root.key:
-            self.Root.key = node2.key
+        if switch1.key == self.root.key:
+            self.root.key = node2.key
             switch2.key = temp_key
 
-        elif switch2.key == self.Root.key:
-            switch1.key = self.Root.key
-            self.Root.key = temp_key
+        elif switch2.key == self.root.key:
+            switch1.key = self.root.key
+            self.root.key = temp_key
         else:
             switch1.key = node2.key
             switch2.key = temp_key
@@ -355,15 +363,15 @@ class RBTree:
         else:
             child_color = node.right.color
 
-        if node.key == self.Root.key:
+        if node.key == self.root.key:
             if node.right:
-                self.Root = node.right
-                self.Root.color = 'k'
+                self.root = node.right
+                self.root.color = 'k'
                 node.right = None
                 new_node = node.right
             else:
-                self.Root = node.left
-                self.Root.color = 'k'
+                self.root = node.left
+                self.root.color = 'k'
                 node.left = None
                 new_node = node.left
 
