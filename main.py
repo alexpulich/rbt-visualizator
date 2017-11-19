@@ -12,8 +12,8 @@ from matplotlib.figure import Figure
 class Window(QtWidgets.QDialog):
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
-        self.init_ui()
-        self.init_tree()
+        self.init_tree_drawer()
+        self.init_ui(self.tree_drawer.canvas)
 
     def center(self):
         qr = self.frameGeometry()
@@ -21,13 +21,8 @@ class Window(QtWidgets.QDialog):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def init_ui(self):
+    def init_ui(self, canvas):
         self.setWindowTitle('Red-Black Tree | Alex Pulich, P3417')
-
-        # pyplot
-        self.figure = Figure()
-        self.canvas = FigureCanvas(self.figure)
-        # self.toolbar = NavigationToolbar(self.canvas, self)
 
         # controls
         # tree managing group
@@ -70,7 +65,7 @@ class Window(QtWidgets.QDialog):
         # set the main layout
         layout = QtWidgets.QVBoxLayout()
         # layout.addWidget(self.toolbar)
-        layout.addWidget(self.canvas)
+        layout.addWidget(canvas)
         controls_layout = QtWidgets.QHBoxLayout()
         controls_layout.addWidget(tree_mng_groupbox)
         controls_layout.addWidget(io_groupbox)
@@ -78,8 +73,8 @@ class Window(QtWidgets.QDialog):
         self.setLayout(layout)
         self.center()
 
-    def init_tree(self):
-        self.tree = RBTree()
+    def init_tree_drawer(self):
+        self.tree_drawer = TreeDrawer()
 
     def add_btn_handler(self):
         if len(self.key_input.text()) == 0:
@@ -91,8 +86,7 @@ class Window(QtWidgets.QDialog):
             self.show_error('Int expected', 'The key should be a number!')
 
         if key:
-            self.tree.insert(key)
-            self.plot()
+            self.tree_drawer.insert(key)
             self.key_input.clear()
 
     def remove_btn_handler(self):
@@ -102,35 +96,40 @@ class Window(QtWidgets.QDialog):
         try:
             key = int(self.key_input.text())
         except ValueError:
-            print('Failed to convert to int')
+            self.show_error('Int expected', 'The key should be a number!')
 
         if key:
-            self.tree.delete(key)
+            self.tree_drawer.remove(key)
             self.key_input.clear()
-            self.plot()
 
     def search_btn_handler(self):
         if len(self.key_input.text()) == 0:
             return
-        # self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
-        node = self.tree.get_node(int(self.key_input.text()))
-        node_path = self.tree.get_path(node)
-        self.plot(self._color_search_path(node_path))
+
+        key = None
+        try:
+            key = int(self.key_input.text())
+        except ValueError:
+            self.show_error('Int expected', 'The key should be a number!')
+
+        if key:
+            self.tree_drawer.search(key)
+            self.key_input.clear()
 
     def export_btn_handler(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree',
                                                       'Red-Black Tree files (*.rbtree)')[0]
         if fname:
             with open(fname, 'wb') as f:
-                pickle.dump(self.tree, f)
+                pickle.dump(self.tree_drawer.tree, f)
 
     def import_btn_handler(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Import RBTree', '',
                                                       'Red-Black Tree files (*.rbtree)')[0]
         if fname:
             with open(fname, 'rb') as f:
-                self.tree = pickle.load(f)
-            self.plot()
+                self.tree_drawer.tree = pickle.load(f)
+            self.tree_drawer.plot()
 
     def show_error(self, title, message):
         msg = QtWidgets.QMessageBox()
@@ -138,27 +137,39 @@ class Window(QtWidgets.QDialog):
         msg.setWindowTitle(title)
         msg.setText(message)
         msg.setStandardButtons(QtWidgets.QMessageBox.Ok)
-        retval = msg.exec_()
+        msg.exec_()
         self.key_input.clear()
 
-    def _color_search_path(self, path):
-        nodes = [x.key for x in self._preorder(self.tree)]
-        colors = self._get_color_list(self.tree)
-        for p in path:
-            try:
-                pos = nodes.index(p)
-            except ValueError:
-                pass
-            colors[pos] = 'g'
-        return colors
 
-    def plot(self, search_colors = None):
+class TreeDrawer:
+
+    def __init__(self):
+        self.tree = RBTree()
+        self.figure = Figure()
+        self.canvas = FigureCanvas(self.figure)
+
+        pass
+
+    def insert(self, key):
+        self.tree.insert(key)
+        self.plot()
+
+    def remove(self, key):
+        self.tree.delete(key)
+        self.plot()
+
+    def search(self, key):
+        node = self.tree.get_node(key)
+        if node:
+            node_path = self.tree.get_path(node)
+            self.plot(self._color_search_path(node_path))
+
+    def plot(self, search_colors=None):
         self.figure.clear()
         ax = self.figure.add_subplot(111)
-
         ax.clear()
 
-        G = nx.Graph()
+        g = nx.Graph()
 
         pos = self._get_pos_list(self.tree)
         nodes = [x.key for x in self._preorder(self.tree)]
@@ -173,54 +184,43 @@ class Window(QtWidgets.QDialog):
         else:
             colors = search_colors
 
-        G.add_nodes_from(nodes)
-        G.add_edges_from(edges)
+        g.add_nodes_from(nodes)
+        g.add_edges_from(edges)
 
         if len(colors) > 0:
-            nx.draw_networkx_nodes(G, pos, node_size=600, node_color=colors, ax=ax)
-            nx.draw_networkx_edges(G, pos, ax=ax)
-            nx.draw_networkx_labels(G, pos, labels, font_color='w', ax=ax)
+            nx.draw_networkx_nodes(g, pos, node_size=600, node_color=colors, ax=ax)
+            nx.draw_networkx_edges(g, pos, ax=ax)
+            nx.draw_networkx_labels(g, pos, labels, font_color='w', ax=ax)
         else:
-            nx.draw_networkx_nodes(G, pos, node_size=600, node_color='r', ax=ax)
-            nx.draw_networkx_edges(G, pos, ax=ax)
-            nx.draw_networkx_labels(G, pos, labels, ax=ax)
+            nx.draw_networkx_nodes(g, pos, node_size=600, node_color='r', ax=ax)
+            nx.draw_networkx_edges(g, pos, ax=ax)
+            nx.draw_networkx_labels(g, pos, labels, ax=ax)
 
         ax.axis('off')
 
         self.canvas.draw()
 
+    def _color_search_path(self, path):
+        nodes = [x.key for x in self._preorder(self.tree)]
+        colors = self._get_color_list(self.tree)
+        for p in path:
+            try:
+                pos = nodes.index(p)
+                colors[pos] = 'g'
+            except ValueError:
+                pass
+        return colors
+
     def _get_pos_list(self, tree):
-        """
-        _get_pos_list(tree) -> Mapping. Produces a mapping
-        of nodes as keys, and their coordinates for plotting
-        as values. Since pyplot or networkx don't have built in
-        methods for plotting binary search trees, this somewhat
-        choppy method has to be used.
-        """
-        return self._get_pos_list_from(tree, tree.root, {}, 0, (0, 0), 1.0)
+        return self._get_pos_list_from(tree, tree.root, {}, (0, 0), 1.0)
 
-    def _get_pos_list_from(self, tree, node, poslst, index, coords, gap):
-        """
-        _get_pos_list_from(tree,node,poslst,index,coords,gap) -> Mapping.
-        Produces a mapping of nodes as keys, and their coordinates for
-        plotting as values.
-
-        Non-straightforward arguments:
-        index: represents the index of node in
-        a list of all Nodes in tree in preorder.
-        coords: represents coordinates of node's parent. Used to
-        determine coordinates of node for plotting.
-        gap: represents horizontal distance from node and node's parent.
-        To achieve plotting consistency each time we move down the tree
-        we half this value.
-        """
+    def _get_pos_list_from(self, tree, node, poslst, coords, gap):
         positions = poslst
 
         if node and node.key == tree.root.key:
             positions[node.key] = (0, 0)
-            positions = self._get_pos_list_from(tree, tree.root.left, positions, 1, (0, 0), gap)
-            positions = self._get_pos_list_from(tree, tree.root.right, positions, 1 + tree.get_element_count(node.left),
-                                                (0, 0), gap)
+            positions = self._get_pos_list_from(tree, tree.root.left, positions, (0, 0), gap)
+            positions = self._get_pos_list_from(tree, tree.root.right, positions, (0, 0), gap)
             return positions
         elif node:
             if node.parent.right and node.parent.right.key == node.key:
@@ -230,27 +230,16 @@ class Window(QtWidgets.QDialog):
                 new_coords = (coords[0] - gap, coords[1] - 1)
                 positions[node.key] = new_coords
 
-            positions = self._get_pos_list_from(tree, node.left, positions, index + 1, new_coords, gap / 2)
-            positions = self._get_pos_list_from(tree, node.right, positions,
-                                                1 + index + tree.get_element_count(node.left), new_coords, gap / 2)
+            positions = self._get_pos_list_from(tree, node.left, positions, new_coords, gap / 2)
+            positions = self._get_pos_list_from(tree, node.right, positions, new_coords, gap / 2)
             return positions
         else:
             return positions
 
     def _get_edge_list(self, tree):
-        """
-        _get_edge_list(tree) -> Sequence. Produces a sequence
-        of tuples representing edges to be drawn.
-        """
         return self._get_edge_list_from(tree, tree.root, [])
 
     def _get_edge_list_from(self, tree, node, edgelst):
-        """
-        _get_edge_list_from(tree,node,edgelst,index) -> Sequence.
-        Produces a sequence of tuples representing edges to be drawn.
-        As stated before, index represents the index of node in
-        a list of all Nodes in tree in preorder.
-        """
         edges = edgelst
 
         if node and node.key == tree.root.key:
@@ -277,11 +266,6 @@ class Window(QtWidgets.QDialog):
             return edges
 
     def _preorder(self, tree, *args):
-        """
-        _preorder(tree,...) -> Sequence. Produces a sequence of the Nodes
-        in tree, obtained in preorder. Used to get information
-        for plotting.
-        """
         if len(args) == 0:
             elements = []
             node = tree.root
@@ -299,12 +283,6 @@ class Window(QtWidgets.QDialog):
         return elements
 
     def _get_color_list(self, tree):
-        """
-        _get_color_list(tree) -> Sequence. Produces
-        a sequence of colors in tree for plotting.
-        NOTE: Assumes tree is a Red Black Tree.
-        This is checked first in the main function draw().
-        """
         nodelist = self._preorder(tree)
         colorlist = []
         for node in nodelist:
