@@ -1,7 +1,4 @@
 import collections
-import time
-
-window = None
 
 
 class Node:
@@ -16,18 +13,15 @@ class Node:
 
 
 class RBTree:
-    def __init__(self, w):
-        global window
-        window = w
-
+    def __init__(self, *args):
         self.Root = None
 
-        # if len(args) == 1:
-        #     if isinstance(args[0], collections.Iterable):
-        #         for x in args[0]:
-        #             self.insert(x)
-        #     else:
-        #         raise TypeError(str(args[0]) + " is not iterable")
+        if len(args) == 1:
+            if isinstance(args[0], collections.Iterable):
+                for x in args[0]:
+                    self.insert(x)
+            else:
+                raise TypeError(str(args[0]) + " is not iterable")
 
     def get_node(self, key, *args):
         if len(args) == 0:
@@ -44,22 +38,14 @@ class RBTree:
         else:
             return self.get_node(key, start.left)
 
-    def search_node(self, key, *args):
-        if len(args) == 0:
-            start = self.Root
-        else:
-            start = args[0]
-            start.color = 'g'
-            window.plot()
+    def get_path(self, node):
+        curr = node
+        lst = [curr.key]
+        while curr.parent is not None:
+            curr = curr.parent
+            lst.append(curr.key)
 
-        if not start:
-            return None
-        if key == start.key:
-            return start
-        elif key > start.key:
-            return self.search_node(key, start.right)
-        else:
-            return self.search_node(key, start.left)
+        return reversed(lst)
 
     def insert(self, key, *args):
         if not isinstance(key, int):

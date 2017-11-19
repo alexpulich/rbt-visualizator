@@ -79,7 +79,7 @@ class Window(QtWidgets.QDialog):
         self.center()
 
     def init_tree(self):
-        self.tree = RBTree(self)
+        self.tree = RBTree()
 
     def add_btn_handler(self):
         if len(self.key_input.text()) == 0:
@@ -112,7 +112,9 @@ class Window(QtWidgets.QDialog):
     def search_btn_handler(self):
         if len(self.key_input.text()) == 0:
             return
-        self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
+        # self.tree.search_node(int(self.key_input.text()), self.tree.Root, True)
+        node = self.tree.get_node(int(self.key_input.text()))
+        node_path = self.tree.get_path(node)
 
     def export_btn_handler(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree',
