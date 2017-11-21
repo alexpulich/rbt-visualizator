@@ -255,9 +255,10 @@ class RBTree:
 
     def delete(self, key):
         node = self.get_node(key, self.root)
-
         if node:
-            if not (node.left or node.right):
+            if node == self.root:
+                self.root = None
+            elif not (node.left or node.right):
                 if node.parent:
                     self._delete_leaf(node)
 
@@ -468,7 +469,8 @@ class RBTree:
             sib_right_color = 'r'
 
         if par_node.color == 'k' and sib_color == 'k' and sib_left_color == 'k' and sib_right_color == 'k':
-            sib_node.color = 'r'
+            if sib_node:
+                sib_node.color = 'r'
             self._delete_case_one(par_node, par_node.parent if par_node.parent else None)
         else:
             self._delete_case_four(node, par_node)

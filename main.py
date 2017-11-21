@@ -164,32 +164,34 @@ class TreeDrawer:
         ax = self.figure.add_subplot(111)
         ax.clear()
 
-        g = nx.Graph()
+        if self.tree.root:
 
-        pos = self._get_pos_list(self.tree)
-        nodes = [x.key for x in self._preorder(self.tree)]
-        edges = self._get_edge_list(self.tree)
-        labels = {x: x for x in nodes}
-        if search_colors is None:
-            colors = []
-            try:
-                colors = self._get_color_list(self.tree)
-            except AttributeError:
-                pass
-        else:
-            colors = search_colors
+            g = nx.Graph()
 
-        g.add_nodes_from(nodes)
-        g.add_edges_from(edges)
+            pos = self._get_pos_list(self.tree)
+            nodes = [x.key for x in self._preorder(self.tree)]
+            edges = self._get_edge_list(self.tree)
+            labels = {x: x for x in nodes}
+            if search_colors is None:
+                colors = []
+                try:
+                    colors = self._get_color_list(self.tree)
+                except AttributeError:
+                    pass
+            else:
+                colors = search_colors
 
-        if len(colors) > 0:
-            nx.draw_networkx_nodes(g, pos, node_size=600, node_color=colors, ax=ax)
-            nx.draw_networkx_edges(g, pos, ax=ax)
-            nx.draw_networkx_labels(g, pos, labels, font_color='w', ax=ax)
-        else:
-            nx.draw_networkx_nodes(g, pos, node_size=600, node_color='r', ax=ax)
-            nx.draw_networkx_edges(g, pos, ax=ax)
-            nx.draw_networkx_labels(g, pos, labels, ax=ax)
+            g.add_nodes_from(nodes)
+            g.add_edges_from(edges)
+
+            if len(colors) > 0:
+                nx.draw_networkx_nodes(g, pos, node_size=600, node_color=colors, ax=ax)
+                nx.draw_networkx_edges(g, pos, ax=ax)
+                nx.draw_networkx_labels(g, pos, labels, font_color='w', ax=ax)
+            else:
+                nx.draw_networkx_nodes(g, pos, node_size=600, node_color='r', ax=ax)
+                nx.draw_networkx_edges(g, pos, ax=ax)
+                nx.draw_networkx_labels(g, pos, labels, ax=ax)
 
         ax.axis('off')
 
