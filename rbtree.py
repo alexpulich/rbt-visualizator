@@ -87,9 +87,8 @@ class RBTree:
 
     def _insert_case_one(self, child):
         """
-        T._insert_case_one(child). Considers the case in which
-        child is at the root of the tree. Recolors black if so,
-        otherwise moves on to case two.
+        if child is at the root, recolors it black,
+        else goes into the second case
         """
         if not child.parent:
             self.root.color = 'k'
@@ -98,21 +97,18 @@ class RBTree:
 
     def _insert_case_two(self, child):
         """
-        T._insert_case_two(child). Considers the case in which
-        child's parent is black. If so, we are done. If not, moves
-        to case three.
+        If child's parent is black - ok,
+        else goes into the third case
         """
         if child.parent.color == 'r':
             self._insert_case_three(child)
 
     def _insert_case_three(self, child):
         """
-        T._insert_case_three(child). Considers the case in which
-        child's parent and uncle are red. If so, recolors
-        the parent and uncle black, and child's grandparent red.
-        Note child's grandparent now may have a red parent, which
-        makes T invalid. So now we start over from case one at
-        the grandparent.
+        If child's parent and uncle are red, recolors the parent and the uncle black
+        and child's grandpa red
+        Then start with the first case on grandpa to validate the tree (grandgrandpa may be also red)
+        Otherwise goes into the fourth case
         """
 
         parent = child.parent
@@ -133,12 +129,10 @@ class RBTree:
 
     def _insert_case_four(self, child):
         """
-        T._insert_case_four(child). Considers the case in which
-        child's parent is red, child's uncle is black, and
-        the parent is the left child of the grandparent while
-        the child is the right child of the parent, or vice versa.
-        If so, performs an appropriate tree rotation around
-        child's parent and moves on to case five.
+        If child's parent is red and child's uncle is black
+        and parent is a left child of the grandpa,
+        the child is the right child of the parent or vice versa
+        makes tree rotations around parent and goes into the fifth child
         """
         parent = child.parent
         grand_node = parent.parent
@@ -158,11 +152,10 @@ class RBTree:
 
     def _insert_case_five(self, child):
         """
-        T._insert_case_five(child). Considers the case in which
-        child's parent is red, child's uncle is black, and the
-        parent is the left child of the grandparent while the child
-        is the left child of the parent, or vice versa. If so,
-        performs an appropriate tree rotation around the grandparent.
+        If child's parent is red and uncle is black and the parent
+        is the left child of the grandpa and the child is the left child of the parent,
+        or vice versa
+        makes tree rotations around the grandpa
         """
         parent = child.parent
         grand_node = parent.parent
@@ -182,8 +175,7 @@ class RBTree:
 
     def _rotate_left(self, pivot):
         """
-        T.__rotate_left(pivot). Performs a left tree rotation in T
-        around the Node pivot.
+        left tree rotations around pivot
         """
         old_root = pivot
         parent = old_root.parent
@@ -210,8 +202,7 @@ class RBTree:
 
     def _rotate_right(self, pivot):
         """
-        T.__rotate_right(pivot). Performs a right tree rotation in T
-        around the Node pivot.
+        right tree rotation around pivot
         """
         if not pivot.left:
             pass
@@ -240,27 +231,27 @@ class RBTree:
                     parent.left = new_root
                     new_root.parent = parent
 
-    def get_element_count(self, *args):
-        """
-        Counts the number of elements in a tree
-        """
-        if len(args) == 0:
-            node = self.root
-        else:
-            node = args[0]
-
-        left = 0
-        right = 0
-
-        if node:
-            if node.left:
-                left = self.get_element_count(node.left)
-            if node.right:
-                right = self.get_element_count(node.right)
-
-            return 1 + left + right
-        else:
-            return 0
+    # def get_element_count(self, *args):
+    #     """
+    #     Counts the number of elements in a tree
+    #     """
+    #     if len(args) == 0:
+    #         node = self.root
+    #     else:
+    #         node = args[0]
+    #
+    #     left = 0
+    #     right = 0
+    #
+    #     if node:
+    #         if node.left:
+    #             left = self.get_element_count(node.left)
+    #         if node.right:
+    #             right = self.get_element_count(node.right)
+    #
+    #         return 1 + left + right
+    #     else:
+    #         return 0
 
     def delete(self, key):
         node = self.get_node(key, self.root)
@@ -277,10 +268,6 @@ class RBTree:
                 self._delete_node(node)
 
     def _delete_node(self, node):
-        """
-        T.__delete_node(node). Deletes node from T, treating it as
-        a Node with two children.
-        """
         if self.get_height(node.left) > self.get_height(node.right):
             to_switch = self.get_max(node.left)
             self._switch_nodes(node, to_switch)
