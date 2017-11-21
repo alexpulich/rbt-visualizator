@@ -352,10 +352,6 @@ class RBTree:
             switch2.key = temp_key
 
     def _delete_leaf_parent(self, node):
-        """
-        T.__delete_leaf_parent(node). Deletes node from T, treating it
-        as a Node with only one child.
-        """
         par_node = node.parent
         node_color = node.color
         if node.left:
@@ -416,10 +412,6 @@ class RBTree:
             self._delete_case_one(new_node, par_node)
 
     def _delete_leaf(self, node):
-        """
-        T.__delete_leaf_parent(node). Deletes node from T, treating it
-        as a Node with only one child.
-        """
         par_node = node.parent
         node_color = node.color
         new_node = None
@@ -440,21 +432,10 @@ class RBTree:
             self._delete_case_one(new_node, new_parent)
 
     def _delete_case_one(self, child, parent):
-        """
-        T._delete_case_one(child,parent). Considers the case in which
-        child is the new root. If so, we are done. If not, move on to
-        case two.
-        """
         if parent:
             self._delete_case_two(child, parent)
 
     def _delete_case_two(self, child, parent):
-        """
-        T._delete_case_two(child,parent). Considers the case in which
-        child's sibling is red. If so, reverse the colors of parent
-        and sibling, and perform an appropriate tree rotation
-        around the parent. Move on to case three.
-        """
         node = child
         par_node = parent
         sib_node = None
@@ -475,12 +456,6 @@ class RBTree:
         self._delete_case_three(node, par_node)
 
     def _delete_case_three(self, child, parent):
-        """
-        T._delete_case_three(child,parent). Considers the case in which
-        parent, child's sibling, and the sibling's children are all
-        black. If so, recolor child's sibling red and start over
-        from case one from parent. If not, move on to case four.
-        """
         node = child
         par_node = parent
         sib_node = None
@@ -512,12 +487,6 @@ class RBTree:
             self._delete_case_four(node, par_node)
 
     def _delete_case_four(self, child, parent):
-        """
-        T._delete_case_four(child,parent). Considers the case in which
-        child's sibling and its children are black, but parent is red.
-        If so, we swap the colors of the sibling and parent.
-        If not, move on to case five.
-        """
         node = child
         par_node = parent
         sib_node = None
@@ -549,15 +518,6 @@ class RBTree:
             self._delete_case_five(node, par_node)
 
     def _delete_case_five(self, child, parent):
-        """
-        T._delete_case_five(child,parent). Considers the case in which
-        child's sibling is black, its left child is red, its right
-        child is black, and child is the left child of parent.
-        Also considers the mirror case to this. If so, perform
-        an appropriate tree rotation around the sibling, and
-        swap the colors of the sibling and its new parent.
-        Move on to case six.
-        """
         node = child
         par_node = parent
         sib_node = None
@@ -596,15 +556,6 @@ class RBTree:
         self._delete_case_six(node, par_node)
 
     def _delete_case_six(self, child, parent):
-        """
-        Considers the case in which child's sibling is black,
-        its right child is red, and child is the left child of parent.
-        Also considers the mirror of this case. If so, perform
-        an appropriate tree rotation around parent, so that child's sibling
-        becomes the parent of parent and the sibling's right child.
-        Then exchange the colors of parent and child's sibling, and
-        make the sibling's red child black. We are done.
-        """
         node = child
         par_node = parent
         sib_node = None

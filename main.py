@@ -1,27 +1,27 @@
 import sys
+import pickle
+import networkx as nx
 from rbtree import RBTree
 from PyQt5 import QtWidgets
-import networkx as nx
-import pickle
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-# from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 
 
 class Window(QtWidgets.QDialog):
+
     def __init__(self, parent=None):
         super(Window, self).__init__(parent)
-        self.init_tree_drawer()
-        self.init_ui(self.tree_drawer.canvas)
+        self._init_tree_drawer()
+        self._init_ui(self.tree_drawer.canvas)
 
-    def center(self):
+    def _center(self):
         qr = self.frameGeometry()
         cp = QtWidgets.QDesktopWidget().availableGeometry().center()
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    def init_ui(self, canvas):
+    def _init_ui(self, canvas):
         self.setWindowTitle('Red-Black Tree | Alex Pulich, P3417')
 
         # controls
@@ -35,9 +35,9 @@ class Window(QtWidgets.QDialog):
         self.remove_btn = QtWidgets.QPushButton('Remove')
         self.search_btn = QtWidgets.QPushButton('Search')
 
-        self.add_btn.clicked.connect(self.add_btn_handler)
-        self.remove_btn.clicked.connect(self.remove_btn_handler)
-        self.search_btn.clicked.connect(self.search_btn_handler)
+        self.add_btn.clicked.connect(self._add_btn_handler)
+        self.remove_btn.clicked.connect(self._remove_btn_handler)
+        self.search_btn.clicked.connect(self._search_btn_handler)
 
         tree_mng_layout.addWidget(key_label)
         tree_mng_layout.addWidget(self.key_input)
@@ -57,8 +57,8 @@ class Window(QtWidgets.QDialog):
         io_layout.addWidget(self.export_btn)
         io_layout.addWidget(self.import_btn)
 
-        self.import_btn.clicked.connect(self.import_btn_handler)
-        self.export_btn.clicked.connect(self.export_btn_handler)
+        self.import_btn.clicked.connect(self._import_btn_handler)
+        self.export_btn.clicked.connect(self._export_btn_handler)
 
         io_groupbox.setLayout(io_layout)
 
@@ -71,59 +71,54 @@ class Window(QtWidgets.QDialog):
         controls_layout.addWidget(io_groupbox)
         layout.addLayout(controls_layout)
         self.setLayout(layout)
-        self.center()
+        self._center()
 
-    def init_tree_drawer(self):
+    def _init_tree_drawer(self):
         self.tree_drawer = TreeDrawer()
 
-    def add_btn_handler(self):
+    def _add_btn_handler(self):
         if len(self.key_input.text()) == 0:
             return
-        key = None
         try:
             key = int(self.key_input.text())
+            if key:
+                self.tree_drawer.insert(key)
+                self.key_input.clear()
         except ValueError:
-            self.show_error('Int expected', 'The key should be a number!')
+            self._show_error('Int expected', 'The key should be a number!')
 
-        if key:
-            self.tree_drawer.insert(key)
-            self.key_input.clear()
-
-    def remove_btn_handler(self):
+    def _remove_btn_handler(self):
         if len(self.key_input.text()) == 0:
             return
-        key = None
         try:
             key = int(self.key_input.text())
+            if key:
+                self.tree_drawer.remove(key)
+                self.key_input.clear()
         except ValueError:
-            self.show_error('Int expected', 'The key should be a number!')
+            self._show_error('Int expected', 'The key should be a number!')
 
-        if key:
-            self.tree_drawer.remove(key)
-            self.key_input.clear()
-
-    def search_btn_handler(self):
+    def _search_btn_handler(self):
         if len(self.key_input.text()) == 0:
             return
 
         key = None
         try:
             key = int(self.key_input.text())
+            if key:
+                self.tree_drawer.search(key)
+                self.key_input.clear()
         except ValueError:
-            self.show_error('Int expected', 'The key should be a number!')
+            self._show_error('Int expected', 'The key should be a number!')
 
-        if key:
-            self.tree_drawer.search(key)
-            self.key_input.clear()
-
-    def export_btn_handler(self):
+    def _export_btn_handler(self):
         fname = QtWidgets.QFileDialog.getSaveFileName(self, 'Export RBTree', 'mytree.rbtree',
                                                       'Red-Black Tree files (*.rbtree)')[0]
         if fname:
             with open(fname, 'wb') as f:
                 pickle.dump(self.tree_drawer.tree, f)
 
-    def import_btn_handler(self):
+    def _import_btn_handler(self):
         fname = QtWidgets.QFileDialog.getOpenFileName(self, 'Import RBTree', '',
                                                       'Red-Black Tree files (*.rbtree)')[0]
         if fname:
@@ -131,7 +126,7 @@ class Window(QtWidgets.QDialog):
                 self.tree_drawer.tree = pickle.load(f)
             self.tree_drawer.plot()
 
-    def show_error(self, title, message):
+    def _show_error(self, title, message):
         msg = QtWidgets.QMessageBox()
         msg.setIcon(QtWidgets.QMessageBox.Critical)
         msg.setWindowTitle(title)
