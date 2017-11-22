@@ -81,9 +81,8 @@ class Window(QtWidgets.QDialog):
             return
         try:
             key = int(self.key_input.text())
-            if key:
-                self.tree_drawer.insert(key)
-                self.key_input.clear()
+            self.tree_drawer.insert(key)
+            self.key_input.clear()
         except ValueError:
             self._show_error('Int expected', 'The key should be a number!')
 
@@ -92,9 +91,8 @@ class Window(QtWidgets.QDialog):
             return
         try:
             key = int(self.key_input.text())
-            if key:
-                self.tree_drawer.remove(key)
-                self.key_input.clear()
+            self.tree_drawer.remove(key)
+            self.key_input.clear()
         except ValueError:
             self._show_error('Int expected', 'The key should be a number!')
 
@@ -105,9 +103,8 @@ class Window(QtWidgets.QDialog):
         key = None
         try:
             key = int(self.key_input.text())
-            if key:
-                self.tree_drawer.search(key)
-                self.key_input.clear()
+            self.tree_drawer.search(key)
+            self.key_input.clear()
         except ValueError:
             self._show_error('Int expected', 'The key should be a number!')
 
