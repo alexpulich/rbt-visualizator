@@ -1,8 +1,10 @@
 import sys
 import pickle
 import networkx as nx
+import time
 from rbtree import RBTree
 from PyQt5 import QtWidgets
+import random
 
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
@@ -34,16 +36,21 @@ class Window(QtWidgets.QDialog):
         self.add_btn = QtWidgets.QPushButton('Add')
         self.remove_btn = QtWidgets.QPushButton('Remove')
         self.search_btn = QtWidgets.QPushButton('Search')
+        self.gen_btn = QtWidgets.QPushButton('Gen')
+        self.timer_label = QtWidgets.QLabel('Search time: XXX sec')
 
         self.add_btn.clicked.connect(self._add_btn_handler)
         self.remove_btn.clicked.connect(self._remove_btn_handler)
         self.search_btn.clicked.connect(self._search_btn_handler)
+        self.gen_btn.clicked.connect(self._gen_btn_handler)
 
         tree_mng_layout.addWidget(key_label)
         tree_mng_layout.addWidget(self.key_input)
         tree_mng_layout.addWidget(self.add_btn)
         tree_mng_layout.addWidget(self.remove_btn)
         tree_mng_layout.addWidget(self.search_btn)
+        tree_mng_layout.addWidget(self.gen_btn)
+        tree_mng_layout.addWidget(self.timer_label)
 
         tree_mng_groupbox.setLayout(tree_mng_layout)
 
@@ -103,8 +110,26 @@ class Window(QtWidgets.QDialog):
         key = None
         try:
             key = int(self.key_input.text())
+            start_time = time.time()
             self.tree_drawer.search(key)
+            exec_time = time.time() - start_time
             self.key_input.clear()
+            self.timer_label.setText('Search time: %f sec' % exec_time)
+        except ValueError:
+            self._show_error('Int expected', 'The key should be a number!')
+
+    def _gen_btn_handler(self):
+        if len(self.key_input.text()) == 0:
+            return
+
+        key = None
+        try:
+            key = int(self.key_input.text())
+            elems = []
+            for i in range(0, key):
+                elems.append(random.randint(0, 1000000))
+            self.tree_drawer.tree = RBTree(elems)
+            self.tree_drawer.plot()
         except ValueError:
             self._show_error('Int expected', 'The key should be a number!')
 
@@ -181,14 +206,16 @@ class TreeDrawer:
             g.add_nodes_from(nodes)
             g.add_edges_from(edges)
 
+            max_len = len(str(self.tree.get_max().key))
+            size = max_len * 200
             if len(colors) > 0:
-                nx.draw_networkx_nodes(g, pos, node_size=600, node_color=colors, ax=ax)
+                nx.draw_networkx_nodes(g, pos, node_size=size, node_color=colors, ax=ax)
                 nx.draw_networkx_edges(g, pos, ax=ax)
-                nx.draw_networkx_labels(g, pos, labels, font_color='w', ax=ax)
+                nx.draw_networkx_labels(g, pos, labels, font_color='w', ax=ax,font_size=8)
             else:
-                nx.draw_networkx_nodes(g, pos, node_size=600, node_color='r', ax=ax)
+                nx.draw_networkx_nodes(g, pos, node_size=size, node_color='r', ax=ax)
                 nx.draw_networkx_edges(g, pos, ax=ax)
-                nx.draw_networkx_labels(g, pos, labels, ax=ax)
+                nx.draw_networkx_labels(g, pos, labels, ax=ax,font_size=8)
 
         ax.axis('off')
 
